@@ -24,7 +24,7 @@ modifier onlyOwner() {
 }
 
 modifier drawConditions() {
-    require(players.length >= 3 || block.timestamp >= deployDate + 2 hours, "Not enough players participating in a lottery or it's not yet time for the draw");
+    require(players.length == 3 || block.timestamp >= deployDate + 2 hours, "Not enough players participating in a lottery or it's not yet time for the draw");
     _;
 }
 
@@ -39,7 +39,7 @@ function getPlayers() public view returns (address payable[] memory) {
 function enter() public payable {
 require(msg.value == 0.0001 ether, "Should be exact 0.0001 ether");
 require(msg.sender != owner, "Owner cann't play");
-require(players.length <= 3 && block.timestamp < deployDate + 2 hours, "Player limit reached or time is out");
+require(players.length < 3 && block.timestamp < deployDate + 2 hours, "Player limit reached or time is out");
 
 /// @notice address of player entering lottery
 players.push(payable (msg.sender));
