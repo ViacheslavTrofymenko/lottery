@@ -36,7 +36,9 @@ describe("Test of Lottery contract", function () {
 
     it("should be exact 0.0001 ether to enter", async function() {
       await lottery.connect(acc1).enter({value: ethers.utils.parseEther("0.0001")});
+
       expect(await lottery.getBalance()).to.eq(ethers.utils.parseEther("0.0001"));
+      
       await expect(lottery.connect(acc1).enter({value: ethers.utils.parseEther("0.0002")})).to.be.revertedWith("Should be exact 0.0001 ether")
   })
   
@@ -46,7 +48,7 @@ describe("Test of Lottery contract", function () {
       await lottery.connect(acc3).enter({value: ethers.utils.parseEther("0.0001")});
       const qty = await lottery.getPlayers();
 
-      expect(qty.length).to.eq(3)
+      expect(qty.length).to.eq(3);
 
       await expect (lottery.connect(acc4).enter({value: ethers.utils.parseEther("0.0001")})).to.be.revertedWith("Player limit reached or time is out")      
     })
@@ -78,25 +80,24 @@ describe("Test of Lottery contract", function () {
 
       expect(blockNumAfter).to.be.equal(blockNumBefore + 1);
       expect(timestampAfter).to.be.equal(timestampBefore + twoHours);
-      console.log(timestampBefore)
+      console.log(timestampBefore);
       console.log(timestampAfter)
-      
       })
 
 
        
     it("Gainings should go 90% => Winner and 10% => owner", async function() {
       const balanceBefore = await ethers.provider.getBalance(lottery.address);
-      console.log(balanceBefore)
+      console.log(balanceBefore);
 
       await lottery.connect(acc1).enter({value: ethers.utils.parseEther("0.0001")});
       await lottery.connect(acc2).enter({value: ethers.utils.parseEther("0.0001")});
       await lottery.connect(acc3).enter({value: ethers.utils.parseEther("0.0001")});
 
       const balanceIn = await ethers.provider.getBalance(lottery.address);
-      console.log(balanceIn)
+      console.log(balanceIn);
 
-      expect(balanceIn).to.eq(ethers.utils.parseEther("0.0003"))
+      expect(balanceIn).to.eq(ethers.utils.parseEther("0.0003"));
 
       const ownerBalanceBefore = await ethers.provider.getBalance(owner.address);
 
@@ -104,14 +105,13 @@ describe("Test of Lottery contract", function () {
 
       const balanceAfter = await ethers.provider.getBalance(lottery.address);
       const ownerBalanceAfter = await ethers.provider.getBalance(owner.address);
-      console.log(balanceAfter)
+      console.log(balanceAfter);
 
       expect(ownerBalanceAfter.sub(ownerBalanceBefore)).to.eq(29999999945256)
 
       const balance = await lottery.getBalance();
 
       expect(balance).to.eq(0)
-
     })
   })
   })
