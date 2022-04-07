@@ -37,8 +37,8 @@ function getPlayers() public view returns (address payable[] memory) {
 }
 
 function enter() public payable {
-require(msg.value == 0.0001 ether, "Should be exact 0.0001 ether");
 require(msg.sender != owner, "Owner cann't play");
+require(msg.value == 0.0001 ether, "Should be exact 0.0001 ether");
 require(players.length < 3 && block.timestamp < deployDate + 2 hours, "Player limit reached or time is out");
 
 /// @notice address of player entering lottery
@@ -53,10 +53,10 @@ function pickWinner() public onlyOwner drawConditions {
     address payable winner;
     winner = players[getRandomNumber() % players.length];
 
-    winner.transfer(getBalance() * 9 / 10);
-
     address payable _to = payable(owner);
     _to.transfer(getBalance() / 10);
+    
+    winner.transfer(getBalance());
 
     lotteryId++;
 

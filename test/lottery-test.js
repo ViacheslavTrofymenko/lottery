@@ -1,13 +1,13 @@
-const { inputToConfig } = require("@ethereum-waffle/compiler");
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { providers } = require("ethers");
 
 
 describe("Test of Lottery contract", function () {
-  let owner, acc1, acc2, acc3, lottery;
+  let owner, acc1, acc2, acc3, acc4, lottery;
 
   beforeEach(async function() {
-    [owner, acc1, acc2, acc3] = await ethers.getSigners();
+    [owner, acc1, acc2, acc3, acc4] = await ethers.getSigners();
     const Lottery = await ethers.getContractFactory("Lottery", owner);
     lottery = await Lottery.deploy();
     await lottery.deployed();        
@@ -26,32 +26,78 @@ describe("Test of Lottery contract", function () {
       const balance = await lottery.getBalance();
       expect(balance).to.eq(0)
     })
-  })
+  }) 
+
 
   describe('Enter function', () => {    
-    it("should be exact 0.1 ether to enter", async function() {
-      const sum = ethers.utils.parseEther("0.1");
-      acc1.balance = ethers.utils.parseEther("0.1");
-      expect(acc1.balance).to.eq(sum);
+    it("Owner cann't play", async function() {
+      await expect(lottery.connect(owner).enter()).to.be.revertedWith("Owner cann't play")
+  })
+
+    it("should be exact 0.0001 ether to enter", async function() {
+      await lottery.connect(acc1).enter({value: ethers.utils.parseEther("0.0001")});
+      expect(await lottery.getBalance()).to.eq(ethers.utils.parseEther("0.0001"));
+      await expect(lottery.connect(acc1).enter({value: ethers.utils.parseEther("0.0002")})).to.be.revertedWith("Should be exact 0.0001 ether")
+  })
+  
+    it ("Only 3 players can play", async function() {
+      await lottery.connect(acc1).enter({value: ethers.utils.parseEther("0.0001")});
+      await lottery.connect(acc2).enter({value: ethers.utils.parseEther("0.0001")});
+      await lottery.connect(acc3).enter({value: ethers.utils.parseEther("0.0001")});
+      const qty = await lottery.getPlayers();
+
+      expect(qty.length).to.eq(3)
+
+      await expect (lottery.connect(acc4).enter({value: ethers.utils.parseEther("0.0001")})).to.be.revertedWith("Player limit reached or time is out")      
     })
 
-    it("Owner cann't play", async function() {      
-    //   await expect(lottery.connect(owner).enter()).to.be.revertedWith("Sorry, you are owner")      
-    // })
-  })
-
-  // function delay(ms) {
-  //   return new Promise(resolve => setTimeout(resolve, ms))
-  // }
-
   describe('PickWinner function', () => {  
-    it("Only owner can pick a winner", async function() {
-    //   this.timeout(15000) //15s  
-    // await delay(11000)
-    await expect(lottery.connect(acc1).pickWinner()).to.be.revertedWith("Only owner can pick winner")
+    it("Only owner can pick a winner", async function() {       
+      await expect(lottery.connect(acc1).pickWinner()).to.be.revertedWith("You are not the Owner")
   })
-     
+
+    it("should require quantity of players", async function(){            
+      await expect (lottery.pickWinner()).to.be.revertedWith("Not enough players participating in a lottery or it's not yet time for the draw")
+    })
+
+    // it("should check time", async function() {
+    //   console.log(await ethers.provider.getBlockNumber())
+
+    //   const time = await ethers.provider.getBlock(18).timestamp
+    //   console.log(time)
+
+    // })
+
+
+       
     it("Gainings should go 90% => Winner and 10% => owner", async function() {
-    })    
+      const balanceBefore = await ethers.provider.getBalance(lottery.address);
+      console.log(balanceBefore)
+
+      await lottery.connect(acc1).enter({value: ethers.utils.parseEther("0.0001")});
+      await lottery.connect(acc2).enter({value: ethers.utils.parseEther("0.0001")});
+      await lottery.connect(acc3).enter({value: ethers.utils.parseEther("0.0001")});
+
+      const balanceIn = await ethers.provider.getBalance(lottery.address);
+      console.log(balanceIn)
+
+      expect(balanceIn).to.eq(ethers.utils.parseEther("0.0003"))
+
+      const ownerBalanceBefore = await ethers.provider.getBalance(owner.address);
+
+      await lottery.pickWinner();
+
+      const balanceAfter = await ethers.provider.getBalance(lottery.address);
+      const ownerBalanceAfter = await ethers.provider.getBalance(owner.address);
+      console.log(balanceAfter)
+
+      expect(ownerBalanceAfter.sub(ownerBalanceBefore)).to.eq(29999999945256)
+
+      const balance = await lottery.getBalance();
+
+      expect(balance).to.eq(0)
+
+    })
+  })
   })
 })

@@ -2,7 +2,6 @@ require("@nomiclabs/hardhat-waffle");
 require('solidity-coverage');
 require('dotenv').config();
 
-require("@nomiclabs/hardhat-ethers");
 const { API_URL, PRIVATE_KEY } = process.env;
 
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -16,7 +15,6 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 
 module.exports = {
   solidity: "0.8.4",
-  defaultNetwork: "ropsten",
    networks: {
       hardhat: {},
       ropsten: {
