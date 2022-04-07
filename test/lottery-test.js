@@ -60,13 +60,28 @@ describe("Test of Lottery contract", function () {
       await expect (lottery.pickWinner()).to.be.revertedWith("Not enough players participating in a lottery or it's not yet time for the draw")
     })
 
-    // it("should check time", async function() {
-    //   console.log(await ethers.provider.getBlockNumber())
+    it("should check time is out", async function() {
+      await expect (lottery.pickWinner()).to.be.revertedWith("Not enough players participating in a lottery or it's not yet time for the draw");
+      
+      const twoHours = 2 * 60 * 60;
 
-    //   const time = await ethers.provider.getBlock(18).timestamp
-    //   console.log(time)
+      const blockNumBefore = await ethers.provider.getBlockNumber();
+      const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+      const timestampBefore = blockBefore.timestamp;
 
-    // })
+      await ethers.provider.send('evm_increaseTime', [twoHours]);
+      await ethers.provider.send('evm_mine');
+
+      const blockNumAfter = await ethers.provider.getBlockNumber();
+      const blockAfter = await ethers.provider.getBlock(blockNumAfter);
+      const timestampAfter = blockAfter.timestamp;
+
+      expect(blockNumAfter).to.be.equal(blockNumBefore + 1);
+      expect(timestampAfter).to.be.equal(timestampBefore + twoHours);
+      console.log(timestampBefore)
+      console.log(timestampAfter)
+      
+      })
 
 
        
