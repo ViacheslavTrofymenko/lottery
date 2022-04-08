@@ -101,13 +101,16 @@ describe("Test of Lottery contract", function () {
 
       const ownerBalanceBefore = await ethers.provider.getBalance(owner.address);
 
-      await lottery.pickWinner();
+      let TX = await lottery.pickWinner();
+      const receipt = await TX.wait();
+      const gasUsed = BigInt(receipt.cumulativeGasUsed) * BigInt(receipt.effectiveGasPrice);
 
       const balanceAfter = await ethers.provider.getBalance(lottery.address);
+
       const ownerBalanceAfter = await ethers.provider.getBalance(owner.address);
       console.log(balanceAfter);
 
-      expect(ownerBalanceAfter.sub(ownerBalanceBefore)).to.eq(29999999945256)
+      expect(ownerBalanceAfter.sub(ownerBalanceBefore).add(gasUsed)).to.eq(ethers.utils.parseEther("0.00003"))
 
       const balance = await lottery.getBalance();
 
