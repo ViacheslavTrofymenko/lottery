@@ -75,13 +75,14 @@ describe("Test of Lottery contract", function () {
       await ethers.provider.send('evm_mine');
 
       const blockNumAfter = await ethers.provider.getBlockNumber();
+
       const blockAfter = await ethers.provider.getBlock(blockNumAfter);
       const timestampAfter = blockAfter.timestamp;
 
       expect(blockNumAfter).to.be.equal(blockNumBefore + 1);
       expect(timestampAfter).to.be.equal(timestampBefore + twoHours);
-      console.log(timestampBefore);
-      console.log(timestampAfter)
+
+      await expect (lottery.connect(acc2).enter({value: ethers.utils.parseEther("0.0001")})).to.be.revertedWith("Player limit reached or time is out");
       })
 
 
