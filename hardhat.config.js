@@ -1,6 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require('solidity-coverage');
 require('dotenv').config();
+require('@openzeppelin/hardhat-upgrades');
 
 const { API_URL, PRIVATE_KEY } = process.env;
 
